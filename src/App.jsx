@@ -268,11 +268,12 @@ identity.avoid — два совета, чего лучше избегать в 
 why — до 12 слов.` }]);
 
 /* 2. другие теории */
-const analyzeTheories = (b, m, t) => askJson([img(b, m), { type: "text", text: TONE +
-`\nКибби ${t.kibbe.type}, Ларсон ${t.larson.type}, цветотип ${t.coloring.season}.
-Верни: {"theories":[{"system":"","result":"","note":""},{"system":"","result":"","note":""}]}
-Ровно две системы: "Энергетические типы Кэрол Тэттл", "12 подтипов цветотипа".
-result — короткий вывод. note — до 12 слов, что это даёт на практике.` }]);
+const analyzeTheoriesWardrobe = (b, m, t) => askJson([img(b, m), { type: "text", text: TONE +
+`\nКибби ${t.kibbe.type}, Ларсон ${t.larson.type}, цветотип ${t.coloring.season}, ${t.coloring.undertone} подтон, ${t.geometry.contrast}.
+Верни: {"theories":[{"system":"","result":"","note":""},{"system":"","result":"","note":""}],"wardrobe":{"palette":[{"name":"","hex":"#000000"}],"silhouettes":["","",""],"accessories":["","",""],"avoid":["",""]}}
+theories — ровно две системы: "Энергетические типы Кэрол Тэттл", "12 подтипов цветотипа".
+result — короткий вывод. note — до 12 слов, что это даёт на практике.
+wardrobe.palette — ровно 6 цветов одежды с реальными hex. Каждый пункт wardrobe — до 9 слов.` }]);
 
 /* 3. волосы */
 const analyzeHair = (b, m, t) => askJson([img(b, m), { type: "text", text: TONE +
@@ -285,12 +286,6 @@ const analyzeFace = (b, m, t) => askJson([img(b, m), { type: "text", text: TONE 
 `\nТипаж ${t.kibbe.type}, лицо ${t.geometry.shape}, ${t.coloring.undertone} подтон.
 Верни: {"brows":{"shape":"","why":"","ref":""},"lips":{"shape":"","ref":"","colors":[{"name":"","hex":"#000000"},{"name":"","hex":"#000000"}]},"makeup":{"base":"","eyes":"","blush":""}}
 Каждое поле — до 10 слов. ref — краткое описание на английском для поиска картинок.` }]);
-
-/* 5. гардероб */
-const analyzeWardrobe = (t) => askJson([{ type: "text", text: TONE +
-`\nКибби ${t.kibbe.type}, Ларсон ${t.larson.type}, цветотип ${t.coloring.season}, ${t.coloring.undertone} подтон, ${t.geometry.contrast}.
-Верни: {"wardrobe":{"palette":[{"name":"","hex":"#000000"}],"silhouettes":["","",""],"accessories":["","",""],"avoid":["",""]}}
-palette — ровно 6 цветов одежды с реальными hex. Каждый пункт до 9 слов.` }]);
 
 /* ---------- рендер на бэкенде ---------- */
 async function callRender(path, body) {
@@ -447,15 +442,13 @@ export default function Zerkalo() {
       setBase(t);
 
       // строго по очереди: параллельные запросы упираются в лимит
-      setStage("Свожу остальные системы");
-      const th = await analyzeTheories(raw, mt, t);
+      setStage("Свожу системы и палитру");
+      const th = await analyzeTheoriesWardrobe(raw, mt, t);
       setStage("Подбираю причёску");
       const hair = await analyzeHair(raw, mt, t);
       setStage("Подбираю брови, губы, макияж");
       const face = await analyzeFace(raw, mt, t);
-      setStage("Собираю палитру гардероба");
-      const ward = await analyzeWardrobe(t);
-      const d = { ...th, ...hair, ...face, ...ward };
+      const d = { ...th, ...hair, ...face };
       setData(d);
 
       setPick({ cut: d.cuts[0]?.name, haircolor: d.haircolors[0]?.name, lips: d.lips.colors[0]?.name });
