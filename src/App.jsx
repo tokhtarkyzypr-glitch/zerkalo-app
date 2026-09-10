@@ -10,79 +10,96 @@ import React, { useState, useEffect } from "react";
 const TRYON_API = "https://zerkalo-tryon.onrender.com";
 
 const CSS = `
-.zk{--paper:#F5F5F3;--card:#FFFFFF;--ink:#1A1D21;--mut:#6E7379;--faint:#9AA0A6;
- --rule:#E3E2DE;--slate:#46586B;--rose:#B0888A;
- --sr:'Playfair Display','Didot','Iowan Old Style',Georgia,serif;
+.zk{--paper:#F5F4F1;--card:#FFFFFF;--ink:#12173A;--mut:#5B5F73;--faint:#9296A6;
+ --rule:#E4E3E0;--navy:#12173A;--pink:#EF1F8C;--blue:#3D5AFE;--lime:#D6E552;--rose:#C23D6B;
  --ss:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
  background:var(--paper);color:var(--ink);font-family:var(--ss);min-height:100vh;
  -webkit-font-smoothing:antialiased}
 .zk *{box-sizing:border-box}
-.zk-w{max-width:460px;margin:0 auto;padding:0 22px 90px}
-.zk-top{display:flex;align-items:baseline;justify-content:space-between;
- padding:20px 0 14px;border-bottom:1px solid var(--rule)}
-.zk-logo{font-family:var(--sr);font-size:21px;letter-spacing:.16em}
-.zk-meta{font-size:10px;color:var(--faint);letter-spacing:.1em}
-.zk-h1{font-family:var(--sr);font-size:36px;line-height:1.14;font-weight:400;margin:38px 0 16px}
-.zk-h2{font-family:var(--sr);font-size:23px;line-height:1.22;font-weight:400;margin:0 0 8px}
+.zk-w{max-width:460px;margin:0 auto;padding:0 16px 90px}
+.zk-top{display:flex;align-items:center;justify-content:space-between;position:relative;
+ animation:glowpulse 3.4s ease-in-out infinite;
+ background:var(--navy);color:#fff;border-radius:18px;padding:16px 20px;margin:14px 0 18px}
+.zk-logo{font-size:19px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;
+ background:linear-gradient(100deg,#fff 0%,var(--lime) 22%,var(--pink) 48%,#fff 72%,var(--blue) 100%);
+ background-size:260% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+ animation:shine 4.5s ease-in-out infinite}
+.zk-meta{font-size:10px;color:rgba(255,255,255,.55);letter-spacing:.08em;text-transform:uppercase}
+.zk-hero{background:var(--navy);color:#fff;border-radius:22px;padding:30px 22px 26px;margin-bottom:14px}
+.zk-h1{font-size:32px;line-height:1.08;font-weight:800;letter-spacing:-.01em;
+ text-transform:uppercase;margin:0 0 14px}
+.zk-h2{font-size:20px;line-height:1.2;font-weight:800;margin:0 0 8px}
 .zk-p{color:var(--mut);font-size:14.5px;line-height:1.68}
-.zk-btn{display:block;width:100%;padding:15px;border:none;background:var(--ink);
- color:var(--paper);font-size:14px;font-weight:500;font-family:var(--ss);cursor:pointer}
-.zk-btn2{background:transparent;color:var(--ink);border:1px solid var(--rule)}
-.zk-file{position:relative;overflow:hidden;text-align:center}
+.zk-hero .zk-p{color:rgba(255,255,255,.72)}
+.zk-btn{display:block;width:100%;padding:16px;border:none;border-radius:100px;background:var(--pink);
+ color:#fff;font-size:14.5px;font-weight:700;font-family:var(--ss);cursor:pointer;text-align:center}
+.zk-btn2{background:rgba(255,255,255,.1);color:#fff}
+.zk-btn3{background:var(--ink);color:#fff}
+.zk-file{position:relative;overflow:hidden}
 .zk-file input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:0;cursor:pointer}
 .zk-btn:focus-visible,.zk-file:focus-within,.zk-tab:focus-visible,.zk-chip:focus-visible{
- outline:2px solid var(--slate);outline-offset:2px}
-.zk-shot{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+ outline:2px solid var(--blue);outline-offset:2px}
+.zk-shot{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;border-radius:18px}
 
-/* карточка-показатель, ядро эстетики */
-.zk-read{background:var(--card);border:1px solid var(--rule);padding:18px 18px 16px;margin-bottom:10px}
-.zk-key{font-size:10.5px;letter-spacing:.11em;color:var(--faint);margin:0 0 7px}
-.zk-val{font-family:var(--sr);font-size:20px;line-height:1.24;margin:0 0 7px}
+/* карточка-показатель */
+.zk-read{background:var(--card);border-radius:16px;padding:18px 18px 16px;margin-bottom:10px}
+.zk-key{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;
+ color:#fff;background:var(--blue);border-radius:100px;padding:4px 10px;margin:0 0 9px;text-transform:uppercase}
+.zk-val{font-size:19px;font-weight:800;line-height:1.26;margin:0 0 7px}
 .zk-sub{color:var(--mut);font-size:13.5px;line-height:1.6;margin:0}
 
 .zk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.zk-tabs{display:flex;gap:22px;border-bottom:1px solid var(--rule);
- margin:24px 0 22px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.zk-tab{background:none;border:none;padding:0 0 11px;color:var(--faint);font-size:13.5px;
- white-space:nowrap;cursor:pointer;font-family:var(--ss);border-bottom:1.5px solid transparent;margin-bottom:-1px}
-.zk-tab[data-on="1"]{color:var(--ink);border-bottom-color:var(--ink)}
+.zk-tabs{display:flex;gap:8px;margin:6px 0 18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.zk-tab{background:var(--card);border:none;border-radius:100px;padding:9px 15px;color:var(--mut);
+ font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;font-family:var(--ss)}
+.zk-tab[data-on="1"]{background:var(--navy);color:#fff}
 
 .zk-item{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--rule);align-items:flex-start}
 .zk-item:last-child{border-bottom:none}
 .zk-item-a{text-decoration:none;color:inherit;cursor:pointer}
-.zk-item-a:active{background:#EFEEEA}
-.zk-thumb{width:74px;height:92px;flex:none;background:var(--card);border:1px solid var(--rule);
+.zk-item-a:active{background:#F1F0EC}
+.zk-thumb{width:74px;height:92px;flex:none;background:var(--paper);border-radius:12px;
  display:flex;align-items:center;justify-content:center;overflow:hidden}
 .zk-thumb img{width:100%;height:100%;object-fit:cover}
 .zk-thumb-a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
 .zk-thumb-t{font-size:9px;color:var(--faint);letter-spacing:.05em;display:flex;align-items:center;gap:2px}
-.zk-nm{font-size:15px;margin:0 0 4px;line-height:1.35}
+.zk-nm{font-size:15px;font-weight:700;margin:0 0 4px;line-height:1.35}
 .zk-wy{color:var(--mut);font-size:13px;line-height:1.55;margin:0}
 
 .zk-sw{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;margin-top:12px}
 .zk-sw.zk-chips{display:flex;flex-wrap:wrap;gap:8px}
-.zk-dot{width:100%;height:52px;border:1px solid rgba(0,0,0,.1)}
+.zk-dot{width:100%;height:52px;border-radius:12px;border:1px solid rgba(0,0,0,.08)}
 .zk-cap{font-size:11px;color:var(--mut);margin-top:6px;text-align:left;line-height:1.35}
 .zk-credit{font-size:9px;color:var(--faint);margin:5px 0 0;line-height:1.3;max-width:74px}
-.zk-chip{padding:8px 14px;border:1px solid var(--rule);background:var(--card);
- color:var(--mut);font-size:13px;cursor:pointer;font-family:var(--ss)}
-.zk-chip[data-on="1"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.zk-chip{padding:9px 15px;border:none;border-radius:100px;background:var(--card);
+ color:var(--mut);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--ss)}
+.zk-chip[data-on="1"]{background:var(--pink);color:#fff}
 
-.zk-note{background:var(--card);border-left:2px solid var(--slate);padding:16px 18px;margin-top:14px}
-.zk-lock{background:var(--card);border:1px solid var(--rule);padding:40px 22px;text-align:center}
-.zk-sheet{position:fixed;inset:0;background:rgba(26,29,33,.42);display:flex;
+.zk-note{background:var(--lime);border-radius:16px;padding:16px 18px;margin-top:14px}
+.zk-note .zk-sub{color:var(--ink)}
+.zk-lock{background:var(--navy);color:#fff;border-radius:18px;padding:40px 22px;text-align:center}
+.zk-lock .zk-p{color:rgba(255,255,255,.7)}
+.zk-sheet{position:fixed;inset:0;background:rgba(18,23,58,.5);display:flex;
  align-items:flex-end;justify-content:center;z-index:50}
-.zk-card{background:var(--paper);width:100%;max-width:460px;padding:28px 22px 32px;
- max-height:92vh;overflow-y:auto;animation:up .26s ease-out}
+.zk-card{background:var(--paper);width:100%;max-width:460px;padding:22px 16px 32px;
+ border-radius:24px 24px 0 0;max-height:92vh;overflow-y:auto;animation:up .26s ease-out}
 @keyframes up{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 @keyframes br{0%,100%{opacity:.3}50%{opacity:1}}
 .zk-br{animation:br 1.9s ease-in-out infinite}
-@media(prefers-reduced-motion:reduce){.zk-card,.zk-br{animation:none}}
-.zk-plan{border:1px solid var(--rule);background:var(--card);padding:16px;margin-bottom:10px;
+@keyframes shine{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes glowpulse{
+ 0%,100%{box-shadow:0 0 0 rgba(239,31,140,0),0 0 0 rgba(214,229,82,0)}
+ 50%{box-shadow:0 0 22px rgba(239,31,140,.38),0 0 40px rgba(214,229,82,.14)}
+}
+@media(prefers-reduced-motion:reduce){.zk-card,.zk-br,.zk-logo,.zk-top{animation:none}}
+.zk-pw-head{background:var(--pink);color:#fff;border-radius:18px;padding:22px;margin-bottom:14px}
+.zk-plan{border:none;border-radius:16px;background:var(--card);padding:16px;margin-bottom:10px;
  width:100%;text-align:left;cursor:pointer;font-family:var(--ss);color:var(--ink)}
-.zk-plan[data-on="1"]{border-color:var(--ink)}
-.zk-price{font-family:var(--sr);font-size:27px}
-.zk-err{border-left:2px solid var(--rose);background:var(--card);padding:14px 16px;margin-top:18px}
+.zk-plan[data-on="1"]{background:var(--navy);color:#fff}
+.zk-plan[data-on="1"] .zk-wy{color:rgba(255,255,255,.65)}
+.zk-price{font-size:26px;font-weight:800}
+.zk-err{border-radius:14px;background:var(--rose);padding:14px 16px;margin-top:18px}
+.zk-err .zk-wy{color:#fff}
 `;
 
 /* ---------- чтение файла ---------- */
@@ -477,28 +494,28 @@ export default function Zerkalo() {
       <style>{CSS}</style>
       <div className="zk-w">
         <div className="zk-top">
-          <span className="zk-logo">Зеркало</span>
+          <span className="zk-logo">Glowup</span>
           <span className="zk-meta">разбор внешности</span>
         </div>
 
         {screen === "start" && (
           <>
-            <h1 className="zk-h1">Одно фото,<br />пять систем типирования</h1>
-            <p className="zk-p">
-              Кибби, Ларсон, энергетические типы Тэттл, 12 подтипов цветотипа и геометрия лица.
-              Каждая система смотрит на внешность со своей стороны, вместе они дают то, чего
-              не даёт ни одна по отдельности. Снимок нужен при дневном свете, без фильтров и очков.
-            </p>
-            {err && <div className="zk-err"><p className="zk-wy">{err}</p></div>}
-            <div style={{ marginTop: 28 }}>
-              <label className="zk-btn zk-file">
+            <div className="zk-hero">
+              <h1 className="zk-h1">Одно фото — пять систем типирования</h1>
+              <p className="zk-p">
+                Кибби, Ларсон, энергетические типы Тэттл, 12 подтипов цветотипа и геометрия лица.
+                Каждая система смотрит на внешность со своей стороны, вместе они дают то, чего
+                не даёт ни одна по отдельности. Снимок нужен при дневном свете, без фильтров и очков.
+              </p>
+              <label className="zk-btn zk-file" style={{ marginTop: 22 }}>
                 Загрузить фото
                 <input type="file" accept="image/*" onChange={onFile} />
               </label>
-              <p className="zk-cap" style={{ width: "auto", textAlign: "left", marginTop: 12 }}>
-                Первый разбор бесплатно. Фото обрабатывается для анализа и не публикуется.
-              </p>
             </div>
+            {err && <div className="zk-err"><p className="zk-wy">{err}</p></div>}
+            <p className="zk-cap" style={{ width: "auto", textAlign: "left", marginTop: 4 }}>
+              Первый разбор бесплатно. Фото обрабатывается для анализа и не публикуется.
+            </p>
           </>
         )}
 
@@ -674,11 +691,13 @@ export default function Zerkalo() {
       {paywall && (
         <div className="zk-sheet" onClick={() => setPaywall(false)}>
           <div className="zk-card" onClick={(e) => e.stopPropagation()}>
-            <h2 className="zk-h2">Зеркало Полное</h2>
-            <p className="zk-p" style={{ marginBottom: 20 }}>
-              Безлимитные разборы по всем системам, палитра гардероба, аксессуары
-              и примерка образов на вашем фото.
-            </p>
+            <div className="zk-pw-head">
+              <h2 className="zk-h2">Glowup Полное</h2>
+              <p className="zk-p" style={{ color: "rgba(255,255,255,.85)" }}>
+                Безлимитные разборы по всем системам, палитра гардероба, аксессуары
+                и примерка образов на вашем фото.
+              </p>
+            </div>
             <button className="zk-plan" data-on={plan === "month" ? "1" : "0"} onClick={() => setPlan("month")}>
               <div className="zk-price">4 900 ₸</div>
               <p className="zk-wy">в месяц, отмена в любой момент</p>
