@@ -411,6 +411,9 @@ export default function Zerkalo() {
   const [plan, setPlan] = useState("month");
   const [pick, setPick] = useState({});
   const [rs, setRs] = useState("idle");
+  const [redeemCode, setRedeemCode] = useState("");
+  const [redeemState, setRedeemState] = useState("idle");
+  const [redeemError, setRedeemError] = useState("");
   const [tryons, setTryons] = useState(0);
   const [renderedPhoto, setRenderedPhoto] = useState(null);
   const [compareView, setCompareView] = useState("after");
@@ -427,6 +430,30 @@ export default function Zerkalo() {
     } catch { /* новая пользовательница */ }
   }, []);
   const save = (n) => { try { localStorage.setItem("zerkalo:account", JSON.stringify(n)); } catch {} };
+
+  async function redeem() {
+    if (!TRYON_API) {
+      setRedeemState("nobackend");
+      return;
+    }
+    setRedeemState("checking");
+    try {
+      const r = await fetch(TRYON_API + "/redeem", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: redeemCode }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || "Код неверный");
+      setPro(true);
+      save({ pro: true, used });
+      setPaywall(false);
+      setRedeemState("idle");
+      setRedeemCode("");
+    } catch (e) {
+      setRedeemError(e.message || "Код не подошёл. Проверьте, что ввели его точно.");
+      setRedeemState("error");
+    }
+  }
 
   async function onFile(e) {
     const f = e.target.files?.[0];
@@ -766,13 +793,37 @@ export default function Zerkalo() {
               <div className="zk-price">2 900 ₸</div>
               <p className="zk-wy">в месяц при оплате за год</p>
             </button>
-            <div style={{ marginTop: 14 }}>
-              <button className="zk-btn" onClick={() => { setPro(true); save({ pro: true, used }); setPaywall(false); }}>
-                Оформить подписку
+            <div className="zk-read" style={{ marginTop: 14 }}>
+              <p className="zk-key">ЕСТЬ КОД ДОСТУПА</p>
+              <p className="zk-sub" style={{ marginBottom: 10 }}>
+                Оплатили лично и получили код — введите его здесь.
+              </p>
+              <input
+                type="text"
+                value={redeemCode}
+                onChange={(e) => { setRedeemCode(e.target.value); setRedeemState("idle"); }}
+                placeholder="Например, GLOWUP-2026"
+                style={{
+                  width: "100%", padding: "12px 14px", borderRadius: 12, border: "1px solid var(--rule)",
+                  fontSize: 15, fontFamily: "var(--ss)", marginBottom: 10,
+                }}
+              />
+              <button className="zk-btn" onClick={redeem} disabled={redeemState === "checking" || !redeemCode}>
+                {redeemState === "checking" ? "Проверяю" : "Активировать"}
               </button>
+              {redeemState === "error" && (
+                <p className="zk-sub" style={{ color: "var(--rose)", marginTop: 8 }}>
+                  {redeemError}
+                </p>
+              )}
+              {redeemState === "nobackend" && (
+                <p className="zk-sub" style={{ marginTop: 8 }}>
+                  Проверка кода ещё не подключена, впишите адрес сервера в TRYON_API.
+                </p>
+              )}
             </div>
             <p className="zk-cap" style={{ width: "auto", textAlign: "left", marginTop: 12 }}>
-              В демоверсии оплата не списывается
+              Код выдаётся лично после оплаты
             </p>
           </div>
         </div>
