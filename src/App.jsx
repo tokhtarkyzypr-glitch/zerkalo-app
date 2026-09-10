@@ -507,7 +507,12 @@ export default function Zerkalo() {
 
     setRs("loading");
     try {
-      const url = await applyTryOn(b64, media, pick);
+      const fullChanges = {
+        ...pick,
+        brows: data.brows.shape,
+        makeup: `${data.makeup.base}, ${data.makeup.eyes}, ${data.makeup.blush}`,
+      };
+      const url = await applyTryOn(b64, media, fullChanges);
       setRenderedPhoto(url);
       setCompareView("after");
       setRs("idle");
@@ -718,7 +723,8 @@ export default function Zerkalo() {
                   </div>
                 )}
                 <p className="zk-p" style={{ marginBottom: 16 }}>
-                  Соберите образ и посмотрите его на своём фото.
+                  Соберите образ и посмотрите его на своём фото. Брови и макияж из разбора
+                  применяются автоматически, отдельно выбирать не нужно.
                   {" "}Осталось примерок сегодня: {Math.max(0, TRYON_LIMIT - tryons)} из {TRYON_LIMIT}.
                 </p>
                 {[["cut","Стрижка",data.cuts.map(c=>c.name)],
