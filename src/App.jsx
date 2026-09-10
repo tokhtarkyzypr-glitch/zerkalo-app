@@ -256,15 +256,13 @@ problem — одна короткая фраза по-русски, что им�
 
 /* 1. основа */
 const analyzeBase = (b, m) => askJson([img(b, m), { type: "text", text: TONE +
-`\nВерни: {"kibbe":{"type":"","why":""},"larson":{"type":"","why":""},"geometry":{"shape":"","proportions":"","lines":"","contrast":""},"coloring":{"season":"","undertone":"","depth":""},"identity":{"summary":"","wear":["","",""],"avoid":["",""]}}
+`\nВерни: {"kibbe":{"type":"","why":""},"larson":{"type":"","why":""},"geometry":{"shape":"","proportions":"","lines":"","contrast":""},"coloring":{"season":"","undertone":"","depth":""},"identity":{"summary":""}}
 kibbe.type — один из 13 типов Кибби по-русски.
 larson.type — система Двин Ларсон: драматик, натурал, романтик, гамин, классик или смешанный вариант.
 geometry — форма лица, пропорции, характер линий, контраст внешности. Каждое до 8 слов.
 identity.summary — связный разбор на 45-60 слов простым языком: что означает сочетание этого типажа
 Кибби и Ларсон, какое впечатление создаёт внешность, к какой эстетике она тяготеет. Без канцелярита,
-пиши как стилист объясняет клиентке лично.
-identity.wear — три конкретных совета, что стоит носить и подчёркивать, до 10 слов каждый.
-identity.avoid — два совета, чего лучше избегать в образе и почему, до 10 слов каждый.
+пиши как стилист объясняет клиентке лично. Про конкретную одежду не пиши, это отдельный раздел.
 why — до 12 слов.` }]);
 
 /* 2. другие теории */
@@ -627,20 +625,6 @@ export default function Zerkalo() {
                     {base.identity.summary}
                   </p>
                 </div>
-                <div className="zk-grid">
-                  <div className="zk-read">
-                    <p className="zk-key">НОСИТЬ</p>
-                    {base.identity.wear.map((w, i) => (
-                      <p className="zk-sub" key={i} style={{ marginBottom: 6 }}>{w}</p>
-                    ))}
-                  </div>
-                  <div className="zk-read">
-                    <p className="zk-key">ИЗБЕГАТЬ</p>
-                    {base.identity.avoid.map((w, i) => (
-                      <p className="zk-sub" key={i} style={{ marginBottom: 6 }}>{w}</p>
-                    ))}
-                  </div>
-                </div>
 
                 {data.theories.map((t, i) => (
                   <Read key={i} k={t.system.toUpperCase()} v={t.result} s={t.note} />
@@ -648,7 +632,7 @@ export default function Zerkalo() {
               </>
             )}
 
-            {tab === "hair" && (
+            {tab === "hair" && gate(
               <>
                 {data.cuts.map((c, i) => (
                   <ExampleRow key={i} title={c.name} why={c.why} desc={c.ref} kind="haircut" />
@@ -665,7 +649,7 @@ export default function Zerkalo() {
               </>
             )}
 
-            {tab === "face" && (
+            {tab === "face" && gate(
               <>
                 <ExampleRow title={`Брови: ${data.brows.shape}`} why={data.brows.why}
                   desc={data.brows.ref || data.brows.shape} kind="brows" />
