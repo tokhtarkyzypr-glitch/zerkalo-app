@@ -307,18 +307,37 @@ const REF_QUERY = {
   lips: (d) => `${d} lips makeup`,
 };
 
-// значок-галерея: спокойный, в духе клинической карточки, не лупа
-function GalleryIcon() {
+// три статичные иконки по категориям, вместо одной общей
+function ScissorsIcon() {
   return (
-    <svg viewBox="0 0 28 28" width="22" height="22" fill="none" aria-hidden="true">
-      <rect x="4" y="6" width="17" height="17" rx="1" stroke="#9AA0A6" strokeWidth="1.2" />
-      <rect x="7" y="3" width="17" height="17" rx="1" stroke="#C7C4BC" strokeWidth="1.2" />
-      <circle cx="10" cy="11" r="1.6" stroke="#9AA0A6" strokeWidth="1.1" />
-      <path d="M5 20l4.2-4.6a1 1 0 0 1 1.5.04L14 19l2.6-3a1 1 0 0 1 1.5 0L21 19"
-            stroke="#9AA0A6" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 28 28" width="24" height="24" fill="none" aria-hidden="true">
+      <circle cx="7" cy="8" r="3" stroke="#3D5AFE" strokeWidth="1.6" />
+      <circle cx="7" cy="20" r="3" stroke="#3D5AFE" strokeWidth="1.6" />
+      <path d="M9.5 10 22 22M9.5 18 22 6" stroke="#3D5AFE" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
+function BrowIcon() {
+  return (
+    <svg viewBox="0 0 28 28" width="24" height="24" fill="none" aria-hidden="true">
+      <path d="M4 17c2.5-6.5 7-9.5 11-9.5S21.5 12 24 17"
+            stroke="#EF1F8C" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M4 17c2.5-4 7-6 11-6s8.5 2 9.5 4.2"
+            stroke="#EF1F8C" strokeWidth="1" strokeLinecap="round" opacity=".45" fill="none" />
+    </svg>
+  );
+}
+function LipsIcon() {
+  return (
+    <svg viewBox="0 0 28 28" width="24" height="24" fill="none" aria-hidden="true">
+      <path d="M4 13c2-3 6-4 10-4s8 1 10 4c-2 1.5-5 2-10 2s-8-.5-10-2z"
+            stroke="#EF1F8C" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M4 13c2 3.5 6 5 10 5s8-1.5 10-5" stroke="#EF1F8C" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M14 9v4" stroke="#EF1F8C" strokeWidth="1.2" strokeLinecap="round" opacity=".5" />
+    </svg>
+  );
+}
+const KIND_ICON = { haircut: ScissorsIcon, brows: BrowIcon, lips: LipsIcon };
 
 // стрелка «открывается в новой вкладке»
 function ExternalIcon() {
@@ -357,10 +376,11 @@ function ExampleRow({ title, why, desc, kind }) {
     );
   }
 
+  const Icon = KIND_ICON[kind] || ScissorsIcon;
   const body = (
     <>
       <div className="zk-thumb zk-thumb-a">
-        <GalleryIcon />
+        <Icon />
         <span className="zk-thumb-t">примеры <ExternalIcon /></span>
       </div>
       <div><p className="zk-nm">{title}</p><p className="zk-wy">{why}</p></div>
