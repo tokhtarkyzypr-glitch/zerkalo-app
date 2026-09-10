@@ -413,11 +413,19 @@ export default function Zerkalo() {
   const [plan, setPlan] = useState("month");
   const [pick, setPick] = useState({});
   const [rs, setRs] = useState("idle");
+  const [tryons, setTryons] = useState(0);
+  const [renderedPhoto, setRenderedPhoto] = useState(null);
+  const [compareView, setCompareView] = useState("after");
+  const [tryonCache, setTryonCache] = useState({});
+
+  const today = () => new Date().toISOString().slice(0, 10);
+  const TRYON_LIMIT = 8; // защита от случайного разгона счёта за API, не только для бесплатных
 
   useEffect(() => {
     try {
       const a = JSON.parse(localStorage.getItem("zerkalo:account") || "{}");
       setPro(!!a.pro); setUsed(a.used || 0);
+      if (a.tryonDate === today()) setTryons(a.tryonCount || 0);
     } catch { /* новая пользовательница */ }
   }, []);
   const save = (n) => { try { localStorage.setItem("zerkalo:account", JSON.stringify(n)); } catch {} };
@@ -479,9 +487,37 @@ export default function Zerkalo() {
 
   async function tryOn() {
     if (!pro) { setPaywall(true); return; }
+
+    const key = JSON.stringify(pick);
+    if (tryonCache[key]) {
+      // тот же образ уже собирали сегодня — показываем готовое, без нового платного вызова
+      setRenderedPhoto(tryonCache[key]);
+      setCompareView("after");
+      return;
+    }
+
+    if (tryons >= TRYON_LIMIT) {
+      setErr(
+        `На сегодня примерок больше нет, лимит ${TRYON_LIMIT} в день защищает от случайного перерасхода. ` +
+        "Возвращается завтра."
+      );
+      setRs("failed");
+      return;
+    }
+
     setRs("loading");
-    try { setPhoto(await applyTryOn(b64, media, pick)); setRs("idle"); }
-    catch (e) {
+    try {
+      const url = await applyTryOn(b64, media, pick);
+      setRenderedPhoto(url);
+      setCompareView("after");
+      setRs("idle");
+
+      const n = today();
+      const count = tryons + 1;
+      setTryons(count);
+      save({ pro, used, tryonDate: n, tryonCount: count });
+      setTryonCache((c) => ({ ...c, [key]: url }));
+    } catch (e) {
       setRs(e.message === "NO_RENDER_BACKEND" ? "nobackend" : "failed");
       if (e.message !== "NO_RENDER_BACKEND") setErr(e.message);
     }
@@ -670,7 +706,21 @@ export default function Zerkalo() {
 
             {tab === "try" && gate(
               <>
-                <p className="zk-p" style={{ marginBottom: 16 }}>Соберите образ и посмотрите его на своём фото.</p>
+                {renderedPhoto && (
+                  <div style={{ marginBottom: 18 }}>
+                    <img src={compareView === "after" ? renderedPhoto : photo} alt="" className="zk-shot" />
+                    <div className="zk-tabs" style={{ margin: "10px 0 0" }}>
+                      {[["before", "До"], ["after", "После"]].map(([k, l]) => (
+                        <button key={k} className="zk-tab" data-on={compareView === k ? "1" : "0"}
+                          onClick={() => setCompareView(k)}>{l}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="zk-p" style={{ marginBottom: 16 }}>
+                  Соберите образ и посмотрите его на своём фото.
+                  {" "}Осталось примерок сегодня: {Math.max(0, TRYON_LIMIT - tryons)} из {TRYON_LIMIT}.
+                </p>
                 {[["cut","Стрижка",data.cuts.map(c=>c.name)],
                   ["haircolor","Цвет волос",data.haircolors.map(c=>c.name)],
                   ["lips","Помада",data.lips.colors.map(c=>c.name)]].map(([k,l,o]) => (
@@ -685,8 +735,8 @@ export default function Zerkalo() {
                   </div>
                 ))}
                 <div style={{ marginTop: 14 }}>
-                  <button className="zk-btn" onClick={tryOn} disabled={rs === "loading"}>
-                    {rs === "loading" ? "Рисую образ" : "Примерить"}
+                  <button className="zk-btn" onClick={tryOn} disabled={rs === "loading" || tryons >= TRYON_LIMIT}>
+                    {rs === "loading" ? "Рисую образ" : tryonCache[JSON.stringify(pick)] ? "Показать" : "Примерить"}
                   </button>
                 </div>
                 {rs === "failed" && <div className="zk-err"><p className="zk-wy">{err}</p></div>}
@@ -701,6 +751,7 @@ export default function Zerkalo() {
             <div style={{ marginTop: 30 }}>
               <button className="zk-btn zk-btn2" onClick={() => {
                 setScreen("start"); setBase(null); setData(null); setRs("idle");
+                setRenderedPhoto(null); setCompareView("after"); setTryonCache({});
               }}>Новый разбор</button>
             </div>
           </>
