@@ -207,7 +207,13 @@ function extractJson(t) {
   const c = t.replace(/```json|```/g, "").trim();
   const a = c.indexOf("{"), b = c.lastIndexOf("}");
   if (a < 0 || b <= a) throw new Error("В ответе нет JSON");
-  return JSON.parse(c.slice(a, b + 1));
+  try {
+    return JSON.parse(c.slice(a, b + 1));
+  } catch {
+    // формулировка нарочно содержит «не JSON», чтобы попасть под тот же
+    // механизм повторов с паузой, что и другие временные сбои
+    throw new Error("Ответ пришёл не JSON, повреждён на границе: " + c.slice(a, a + 120));
+  }
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const isLimit = (m) => /exceeded_limit|concurrent|overloaded|rate|429|529/i.test(m);
